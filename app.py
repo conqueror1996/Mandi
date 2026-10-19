@@ -910,13 +910,17 @@ class Handler(BaseHTTPRequestHandler):
                 and hmac.compare_digest(pw, APP_PASS))
 
     def _need_auth(self):
+        # Content-Length must match the bytes actually written: a short write
+        # makes an upstream proxy (Render) wait for the missing byte and
+        # surface a 502 Bad Gateway.
+        body = b"authentication required\n"
         self.send_response(401)
         self.send_header("WWW-Authenticate",
                          'Basic realm="Mandipay Console", charset="UTF-8"')
         self.send_header("Content-Type", "text/plain; charset=utf-8")
-        self.send_header("Content-Length", "16")
+        self.send_header("Content-Length", str(len(body)))
         self.end_headers()
-        self.wfile.write(b"authentication\n")
+        self.wfile.write(body)
 
     def _send(self, code, body, ctype="application/json"):
         b = body.encode() if isinstance(body, str) else body
@@ -934,6 +938,20 @@ class Handler(BaseHTTPRequestHandler):
         if self.path in ("/", "/index.html"):
             return self._send(200, PAGE, "text/html; charset=utf-8")
         return self._send(404, '{"error":"not found"}')
+
+    def do_HEAD(self):
+        """HEAD without a body, so probes and browsers don't get a 501."""
+        if self.path == "/healthz" or self._authed():
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(PAGE)))
+            self.end_headers()
+            return
+        self.send_response(401)
+        self.send_header("WWW-Authenticate",
+                         'Basic realm="Mandipay Console", charset="UTF-8"')
+        self.send_header("Content-Length", "0")
+        self.end_headers()
 
     def do_POST(self):
         if not self._authed():
