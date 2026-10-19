@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: mandipay-console
+    runtime: python
+    plan: free
+    region: singapore
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+
+      # --- secrets: set these in the Render dashboard, never in git ---
+      - key: APP_USER
+        sync: false
+      - key: APP_PASS
+        sync: false
+      - key: API_USER
+        sync: false
+      - key: API_PASS
+        sync: false
+      - key: MERCHANT_USER
+        sync: false
+      - key: PROXY_URL
+        sync: false
+      - key: KEYS_JSON
+        sync: false
+      - key: DEFAULT_MID
+        sync: false
+
+      # --- non-secret tuning ---
+      - key: LOGIN_SALT
+        value: TEST_SALT
+      - key: HOST
+        value: 0.0.0.0
