@@ -25,6 +25,23 @@ but configured entirely through environment variables and reachable from a phone
 
 `render.yaml` in the repo can also drive the whole service via **New → Blueprint**.
 
+## If the dashboard doesn't offer "Python 3"
+
+Render's newer flow hides the runtime selector until the repo is selected, and
+some accounts show the dropdown labelled **Language** instead of **Runtime**.
+Three ways to get past it, in order of reliability:
+
+1. **Blueprint (no runtime selection at all)** — Dashboard -> **New +** ->
+   **Blueprint** -> pick this repo -> **Apply**. `render.yaml` already declares
+   `runtime: python`, the start command, the health check and the env var list.
+2. **Docker** — this repo also ships a `Dockerfile`. Choose **New +** ->
+   **Web Service** -> the repo -> runtime **Docker**. Build and start commands
+   are then taken from the image, so no Python selector is involved.
+3. **Manual** — if the dropdown does appear, it may read **Language: Python**
+   rather than **Python 3**; picking that is equivalent.
+
+Either way, `PORT` is injected by Render and read by `app.py`; do not set it.
+
 ## Environment variables
 
 | Key | Required | Purpose |

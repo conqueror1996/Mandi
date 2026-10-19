@@ -1,0 +1,11 @@
+.git
+.gitignore
+__pycache__
+*.pyc
+*.log
+*.jsonl
+.env
+.env.example
+README.md
+render.yaml
+Procfile
