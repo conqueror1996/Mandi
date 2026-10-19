@@ -39,10 +39,20 @@ but configured entirely through environment variables and reachable from a phone
 | `HOST` / `PORT` | no | Default `0.0.0.0` / Render's `$PORT`. |
 | `LOG_PATH` | no | Operator action log, defaults to `/tmp/mandipay_ops/console_ops_98sd5.jsonl`. |
 
-The proxy must be set: Render's own egress IP is a US/EU datacenter address and
-the auth service is geo-gated. With the proxy in place every outbound call
-(`internal.mandipay.com`, the raw gateway, `upi.mandipay.com`) leaves from the
-Indian residential IP, and the UI stays reachable from anywhere.
+The proxy must be set: Render's own egress IP is a datacenter address and the
+auth service is geo-gated. With the proxy in place every outbound call leaves
+from the Indian residential IP, and the UI stays reachable from anywhere.
+
+Two networking details matter when debugging:
+
+- Residential proxies only permit destination ports **80/443**. The gateway
+  backend on `:40000` is refused by the proxy itself (empty `403`), so
+  `GW_BASE` defaults to the same host over TLS on 443 (`https://52.221.140.71`),
+  which serves the identical API.
+- The proxy session string carries the geo pin. `city-gurgaon` keeps egress in
+  Gurugram (verified: `223.190.85.219`, Airtel); `_lifetime-168h` keeps the same
+  exit IP for a week, which matters because the login/session pair is bound to
+  the address that created it.
 
 ## Operator flow
 
